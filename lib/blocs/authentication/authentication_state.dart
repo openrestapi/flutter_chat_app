@@ -9,7 +9,10 @@ class AuthenticationUnAuthenticated extends AuthenticationState {}
 
 class AuthenticationAuthenticated extends AuthenticationState {}
 
-class AuthenticationFailed extends AuthenticationState {}
+class AuthenticationFailed extends AuthenticationState {
+  final String message;
+  AuthenticationFailed({this.message});
+}
 
 class AuthenticationSuccess extends AuthenticationState {}
 

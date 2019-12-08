@@ -1,11 +1,16 @@
+import 'package:chat_app_client/api/API.dart';
 import 'package:dio/dio.dart';
 
 Dio dio = new Dio();
-final String serverUrl = 'https://chat-app-237.herokuapp.com';
-
 class AuthService {
   Future<Response<dynamic>> signin(String username, String password) {
-    return dio.post(serverUrl + '/api/auth/signin');
+    return dio.post(
+      API.serverUrl + '/v1/api/auth/signin',
+      data: {
+        'username': username,
+        'password': password,
+      },
+    );
   }
 
   Future<Response<dynamic>> signup(
@@ -14,11 +19,14 @@ class AuthService {
     String country,
     String password,
   ) {
-    return dio.post(serverUrl + '/api/auth/signup', data: {
-      'username': username,
-      'email': email,
-      'country': country,
-      'password': password,
-    });
+    return dio.post(
+      API.serverUrl + '/v1/api/auth/signup',
+      data: {
+        'username': username,
+        'email': email,
+        'country': country,
+        'password': password,
+      },
+    );
   }
 }

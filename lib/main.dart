@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:chat_app_client/api/AuthService.dart';
+import 'package:chat_app_client/api/chatService.dart';
 import 'package:chat_app_client/blocs/bloc.dart';
 import 'package:chat_app_client/simple_bloc_delegate.dart';
 import 'package:flushbar/flushbar.dart';
@@ -10,20 +11,21 @@ import 'package:chat_app_client/router.dart' as router;
 void main() {
   BlocSupervisor.delegate = SimpleBlocDelegate();
   AuthService authService = new AuthService();
+  ChatService chatService = new ChatService();
+  AuthenticationBloc _authBloc = new AuthenticationBloc(authService);
   var app = MultiBlocProvider(
     providers: [
       BlocProvider<AuthenticationBloc>(
-        builder: (context) =>
-            AuthenticationBloc()..add(CheckCurrentAuthState()),
+        builder: (context) => _authBloc..add(CheckCurrentAuthState()),
       ),
       BlocProvider<SignupBloc>(
         builder: (context) => SignupBloc(authService),
       ),
       BlocProvider<UsersListBloc>(
-        builder: (context) => UsersListBloc(),
+        builder: (context) => UsersListBloc(chatService),
       ),
-      BlocProvider<ConversationBloc>(
-        builder: (context) => ConversationBloc(),
+      BlocProvider<SocketioBloc>(
+        builder: (context) => SocketioBloc(_authBloc),
       ),
     ],
     child: MyApp(),
@@ -38,8 +40,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Chat App',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        appBarTheme: AppBarTheme(elevation: 0.1),
+        primarySwatch: Colors.indigo,
+        appBarTheme: AppBarTheme(elevation: 0.1,),
       ),
       onGenerateRoute: router.onGenerateRoute,
       initialRoute: router.RouteConstants.DecisionPage,

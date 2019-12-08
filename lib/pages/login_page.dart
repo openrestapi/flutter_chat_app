@@ -1,5 +1,9 @@
+import 'package:chat_app_client/blocs/authentication/authentication_bloc.dart';
+import 'package:chat_app_client/blocs/bloc.dart';
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:chat_app_client/router.dart' as router;
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -7,23 +11,62 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  TextEditingController _usernameController;
+  TextEditingController _passwordController;
+  Flushbar flush;
+  @override
+  void initState() {
+    _usernameController = new TextEditingController();
+    _passwordController = new TextEditingController();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    AuthenticationBloc authenticationBloc =
+        BlocProvider.of<AuthenticationBloc>(context);
     return Scaffold(
       body: SingleChildScrollView(
-        physics: BouncingScrollPhysics(),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.lightGreen[300],
-          ),
-          child: new Column(
+        child: BlocListener<AuthenticationBloc, AuthenticationState>(
+          listener: (context, state) {
+            if (state is AuthenticationInProgress) {
+              flush = Flushbar(
+                showProgressIndicator: true,
+                message: ' IN PROGRESS',
+              )..show(context);
+            }
+
+            if (state is AuthenticationFailed) {
+              flush.dismiss();
+              Flushbar(
+                showProgressIndicator: false,
+                message: state.message,
+                duration: Duration(seconds: 2),
+              )..show(context);
+            }
+
+            if (state is AuthenticationSuccess) {
+              Navigator.pushReplacementNamed(
+                context,
+                router.RouteConstants.UsersListPage,
+              );
+            }
+          },
+          child: Column(
             children: <Widget>[
               Container(
                 padding: EdgeInsets.all(50.0),
                 child: Center(
                   child: Icon(
                     Icons.chat,
-                    color: Colors.white,
+                    color: Colors.black,
                     size: 50.0,
                   ),
                 ),
@@ -37,7 +80,7 @@ class _LoginPageState extends State<LoginPage> {
                         "EMAIL",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: Colors.black,
                           fontSize: 15.0,
                         ),
                       ),
@@ -53,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
-                        color: Colors.white,
+                        color: Colors.black,
                         width: 0.5,
                         style: BorderStyle.solid),
                   ),
@@ -65,12 +108,11 @@ class _LoginPageState extends State<LoginPage> {
                   children: <Widget>[
                     new Expanded(
                       child: TextField(
-                        obscureText: true,
+                        controller: _usernameController,
                         textAlign: TextAlign.left,
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'loic.ngou98@gmail.com',
-                          hintStyle: TextStyle(color: Colors.white),
+                          hintStyle: TextStyle(color: Colors.black),
                         ),
                       ),
                     ),
@@ -89,7 +131,7 @@ class _LoginPageState extends State<LoginPage> {
                         "PASSWORD",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: Colors.black,
                           fontSize: 15.0,
                         ),
                       ),
@@ -105,7 +147,7 @@ class _LoginPageState extends State<LoginPage> {
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
-                        color: Colors.white,
+                        color: Colors.black,
                         width: 0.5,
                         style: BorderStyle.solid),
                   ),
@@ -117,12 +159,12 @@ class _LoginPageState extends State<LoginPage> {
                   children: <Widget>[
                     new Expanded(
                       child: TextField(
+                        controller: _passwordController,
                         obscureText: true,
                         textAlign: TextAlign.left,
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: '*********',
-                          hintStyle: TextStyle(color: Colors.white),
+                          hintStyle: TextStyle(color: Colors.black),
                         ),
                       ),
                     ),
@@ -142,7 +184,7 @@ class _LoginPageState extends State<LoginPage> {
                         "Forgot Password?",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: Colors.black,
                           fontSize: 15.0,
                         ),
                         textAlign: TextAlign.end,
@@ -166,7 +208,15 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         color: Colors.green,
                         onPressed: () {
-                          Navigator.pushReplacementNamed(context, '/dashboard');
+                          if (flush != null) {
+                            flush.dismiss();
+                          }
+                          authenticationBloc.add(
+                            AttemptLogin(
+                              username: _usernameController.text,
+                              password: _passwordController.text,
+                            ),
+                          );
                         },
                         child: new Container(
                           padding: const EdgeInsets.symmetric(

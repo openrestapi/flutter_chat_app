@@ -1,20 +1,18 @@
-
-
 import 'package:bloc/bloc.dart';
 
-class SimpleBlocDelegate extends BlocDelegate{
+class SimpleBlocDelegate extends BlocDelegate {
   @override
   void onTransition(Bloc bloc, Transition transition) {
     // TODO: implement onTransition
-    print(transition);
+    //print(transition);
     super.onTransition(bloc, transition);
   }
 
   @override
   void onEvent(Bloc bloc, Object event) {
     // TODO: implement onEvent
-    print(bloc.toString());
-    print(event);
+    //print(bloc.toString());
+    //print(event);
     super.onEvent(bloc, event);
   }
 
